@@ -8,6 +8,7 @@ import labop
 from labop.primitive_execution import input_parameter_map
 import uml
 import json
+from labop_convert.behavior_dynamics import StateTrajectory
 
 l = logging.getLogger(__file__)
 l.setLevel(logging.WARN)
@@ -34,7 +35,7 @@ class BehaviorSpecialization(ABC):
         self.execution = None
         self.issues = []
         self.out_dir = None
-        self.objects = {}
+        self.state_trajectory = StateTrajectory()
 
         # This data field holds the results of the specialization
         self.data = []
@@ -112,19 +113,8 @@ class BehaviorSpecialization(ABC):
             "behavior": node.behavior,
             "parameters": params,
         }
-        self.update_objects(record)
+        self.state_trajectory.advance(record)
         self.data.append(node_data)
-
-    def update_objects(self, record: labop.ActivityNodeExecution):
-        """
-        Update the objects processed by the record.
-
-        Parameters
-        ----------
-        record : labop.ActivityNodeExecution
-            A step that modifies objects.
-        """
-        pass
 
     def resolve_container_spec(self, spec, addl_conditions=None):
         try:
