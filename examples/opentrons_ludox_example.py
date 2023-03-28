@@ -95,78 +95,84 @@ doc.add(spec_water_container)
 doc.add(spec_plate)
 doc.add(spec_tiprack)
 
-# Load OT2 instrument with labware
-load = protocol.primitive_step("LoadRackOnInstrument", rack=spec_rack, coordinates="1")
-load = protocol.primitive_step(
-    "LoadRackOnInstrument", rack=spec_tiprack, coordinates="2"
-)
-load = protocol.primitive_step("LoadRackOnInstrument", rack=spec_plate, coordinates="3")
+print(spec_rack)
+print(spec_ludox_container)
+print(spec_water_container)
+print(spec_plate)
+print(spec_tiprack)
+
+# # Load OT2 instrument with labware
+# load = protocol.primitive_step("LoadRackOnInstrument", rack=spec_rack, coordinates="1")
+# load = protocol.primitive_step(
+#     "LoadRackOnInstrument", rack=spec_tiprack, coordinates="2"
+# )
+# load = protocol.primitive_step("LoadRackOnInstrument", rack=spec_plate, coordinates="3")
 
 
-# Set up reagents
-rack = protocol.primitive_step("EmptyRack", specification=spec_rack)
-load_rack1 = protocol.primitive_step(
-    "LoadContainerInRack",
-    slots=rack.output_pin("slots"),
-    container=spec_ludox_container,
-    coordinates="A1",
-)
-load_rack2 = protocol.primitive_step(
-    "LoadContainerInRack",
-    slots=rack.output_pin("slots"),
-    container=spec_water_container,
-    coordinates="A2",
-)
-provision = protocol.primitive_step(
-    "Provision",
-    resource=ludox,
-    destination=load_rack1.output_pin("samples"),
-    amount=sbol3.Measure(500, tyto.OM.microliter),
-)
-provision = protocol.primitive_step(
-    "Provision",
-    resource=ddh2o,
-    destination=load_rack2.output_pin("samples"),
-    amount=sbol3.Measure(500, tyto.OM.microliter),
-)
+# # Set up reagents
+# rack = protocol.primitive_step("EmptyRack", specification=spec_rack)
+# load_rack1 = protocol.primitive_step(
+#     "LoadContainerInRack",
+#     slots=rack.output_pin("slots"),
+#     container=spec_ludox_container,
+#     coordinates="A1",
+# )
+# load_rack2 = protocol.primitive_step(
+#     "LoadContainerInRack",
+#     slots=rack.output_pin("slots"),
+#     container=spec_water_container,
+#     coordinates="A2",
+# )
+# provision = protocol.primitive_step(
+#     "Provision",
+#     resource=ludox,
+#     destination=load_rack1.output_pin("samples"),
+#     amount=sbol3.Measure(500, tyto.OM.microliter),
+# )
+# provision = protocol.primitive_step(
+#     "Provision",
+#     resource=ddh2o,
+#     destination=load_rack2.output_pin("samples"),
+#     amount=sbol3.Measure(500, tyto.OM.microliter),
+# )
 
 
-# Set up target samples
-plate = protocol.primitive_step("EmptyContainer", specification=spec_plate)
-water_samples = protocol.primitive_step(
-    "PlateCoordinates", source=plate.output_pin("samples"), coordinates="A1:D1"
-)
-ludox_samples = protocol.primitive_step(
-    "PlateCoordinates", source=plate.output_pin("samples"), coordinates="A2:D2"
-)
+# # Set up target samples
+# plate = protocol.primitive_step("EmptyContainer", specification=spec_plate)
+# water_samples = protocol.primitive_step(
+#     "PlateCoordinates", source=plate.output_pin("samples"), coordinates="A1:D1"
+# )
+# ludox_samples = protocol.primitive_step(
+#     "PlateCoordinates", source=plate.output_pin("samples"), coordinates="A2:D2"
+# )
 
 
-transfer = protocol.primitive_step(
-    "Transfer",
-    source=load_rack1.output_pin("samples"),
-    destination=water_samples.output_pin("samples"),
-    amount=sbol3.Measure(100, tyto.OM.microliter),
-)
-transfer = protocol.primitive_step(
-    "Transfer",
-    source=load_rack1.output_pin("samples"),
-    destination=ludox_samples.output_pin("samples"),
-    amount=sbol3.Measure(100, tyto.OM.microliter),
-)
+# transfer = protocol.primitive_step(
+#     "Transfer",
+#     source=load_rack1.output_pin("samples"),
+#     destination=water_samples.output_pin("samples"),
+#     amount=sbol3.Measure(100, tyto.OM.microliter),
+# )
+# transfer = protocol.primitive_step(
+#     "Transfer",
+#     source=load_rack1.output_pin("samples"),
+#     destination=ludox_samples.output_pin("samples"),
+#     amount=sbol3.Measure(100, tyto.OM.microliter),
+# )
 
 
-filename = "ot2_ludox_labop"
-agent = sbol3.Agent("ot2_machine", name="OT2 machine")
-ee = ExecutionEngine(specializations=[OT2Specialization(filename)])
-parameter_values = []
-execution = ee.execute(protocol, agent, id="test_execution")
+# filename = "ot2_ludox_labop"
+# agent = sbol3.Agent("ot2_machine", name="OT2 machine")
+# ee = ExecutionEngine(specializations=[OT2Specialization(filename)])
+# parameter_values = []
+# execution = ee.execute(protocol, agent, id="test_execution")
 
-# v = doc.validate()
-# assert len(v) == 0, "".join(f'\n {e}' for e in v)
+# # v = doc.validate()
+# # assert len(v) == 0, "".join(f'\n {e}' for e in v)
 
-doc.write("foo.ttl", file_format="ttl")
+# doc.write("foo.ttl", file_format="ttl")
 
-# render and view the dot
-# dot = protocol.to_dot()
-# dot.render(f'{protocol.name}.gv')
-# dot.view()
+# # render and view the dot
+# # dot = protocol.to_dot()
+# # dot.render(f'{protocol.name}.gv')
+# # dot.view()

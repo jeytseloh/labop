@@ -70,7 +70,7 @@ p = labop.Primitive("Incubate")
 p.description = (
     "Incubate a set of samples under specified conditions for a fixed period of time"
 )
-p.add_input("location", "http://bioprotocols.org/labop#SampleArray")
+# p.add_input("location", "http://bioprotocols.org/labop#SampleArray")
 p.add_input("duration", sbol3.OM_MEASURE)  # time
 p.add_input("temperature", sbol3.OM_MEASURE)  # temperature
 p.add_input(
@@ -80,7 +80,7 @@ doc.add(p)
 
 p = labop.Primitive("Hold")
 p.description = "Incubate, store, or hold a set of samples indefinitely at the specified temperature"
-p.add_input("location", "http://bioprotocols.org/labop#SampleArray", unbounded=True)
+# p.add_input("location", "http://bioprotocols.org/labop#SampleArray", unbounded=True)
 p.add_input("temperature", sbol3.OM_MEASURE)  # temperature
 doc.add(p)
 

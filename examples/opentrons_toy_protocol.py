@@ -57,6 +57,8 @@ def get_container(protocol: labop.Protocol, container_name: str, container_type:
         queryString=query_string,
         prefixMap=PREFIX_MAP,
     )
+    print(plate_spec)
+    print(type(plate_spec))
     plate = protocol.primitive_step("EmptyContainer", specification=plate_spec)
     return plate
 
@@ -131,3 +133,12 @@ def opentrons_toy_protocol() -> Tuple[labop.Protocol, Document]:
     protocol.order(transfer, protocol.final())
 
     return protocol, doc
+
+if __name__ == '__main__':
+    protocol, doc = opentrons_toy_protocol()
+
+    filename = 'ot2_toy_protocol'
+    agent = sbol3.Agent('ot2_machine', name='OT2 Machine')
+    ee = ExecutionEngine(specializations=[OT2Specialization(filename)])
+    parameter_values = []
+    execution = ee.execute(protocol, agent, id='test_execution')

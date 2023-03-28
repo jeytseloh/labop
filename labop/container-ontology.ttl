@@ -1213,6 +1213,15 @@ cont:BioRad96WellPCRPlate rdf:type owl:NamedIndividual ,
                                    <https://sift.net/container-ontology/container-ontology#96WellPCRPlate> ;
                           rdfs:label "Bio-Rad 96 well PCR plate" .
 
+###  https://sift.net/container-ontology/container-ontology#Masterblock96WellPlate
+cont:Masterblock96WellPlate rdf:type owl:NamedIndividual ,
+                                   <https://sift.net/container-ontology/container-ontology#Plate96Well> ;
+                          rdfs:label "Masterblock 96 Well Plate" .
+
+###  https://sift.net/container-ontology/container-ontology#Framestar96AluminiumBlock
+cont:Framestar96AluminiumBlock rdf:type owl:NamedIndividual ,
+                                   <https://sift.net/container-ontology/container-ontology#Framestar96AluminiumBlock> ;
+                          rdfs:label "Framestar 96 Aluminium Block" .
 
 ###  https://sift.net/container-ontology/container-ontology#Centrifuge
 cont:Centrifuge rdf:type owl:NamedIndividual .

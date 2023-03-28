@@ -39,7 +39,7 @@ COMPATIBLE_TIPS = {
     "p50_single": [],
     "p50_multi": [],
     "p300_single": ["opentrons_96_tiprack_300ul"],
-    "p300_multi": [],
+    "p300_multi": ["opentrons_96_tiprack_300ul"], # added compatible tiprack
     "p1000_single": [
         "opentrons_96_tiprack_1000ul",
         "opentrons_96_filtertiprack_1000ul",
@@ -61,6 +61,8 @@ LABWARE_MAP = {
     ContO["Corning 96 Well Plate"]: "corning_96_wellplate_360ul_flat",
     ContO["Bio-Rad 96 Well PCR Plate"]: "biorad_96_wellplate_200ul_pcr",
     ContO["NEST 96 Well Plate"]: "nest_96_wellplate_200ul_flat",
+    ContO["Masterblock 96 Well Plate"]: "masterblock_96_wellplate_2000ul", # added custom reagent plate
+    ContO["Framestar 96 Aluminium Block"]: "framestar_96_aluminumblock_200ul" # added custom destination plate
 }
 
 REVERSE_LABWARE_MAP = LABWARE_MAP.__class__(map(reversed, LABWARE_MAP.items()))
@@ -133,6 +135,9 @@ class OT2Specialization(BehaviorSpecialization):
             "https://bioprotocols.org/labop/primitives/sample_arrays/LoadRackOnInstrument": self.load_racks,
             "https://bioprotocols.org/labop/primitives/sample_arrays/ConfigureRobot": self.configure_robot,
             "https://bioprotocols.org/labop/primitives/pcr/PCR": self.pcr,
+            "https://bioprotocols.org/labop/primitives/liquid_handling/PipetteMix": self.pipette_mix,
+            "https://bioprotocols.org/labop/primitives/plate_handling/Hold": self.hold,
+            "https://bioprotocols.org/labop/primitives/plate_handling/Incubate": self.incubate
         }
 
     def handle_process_failure(self, record, exception):
@@ -359,7 +364,8 @@ class OT2Specialization(BehaviorSpecialization):
         value = parameter_value_map["amount"]["value"].value
         units = parameter_value_map["amount"]["value"].unit
         units = tyto.OM.get_term_by_uri(units)
-        OT2Pipette = "left"
+        mount = parameter_value_map["pipette"]["value"] # newly defined parameter
+        # OT2Pipette = "left"
 
         # Trace the "source" pin back to the EmptyContainer to retrieve the
         # ContainerSpec for the destination container
@@ -448,7 +454,8 @@ class OT2Specialization(BehaviorSpecialization):
             raise Exception(
                 "Transfer call failed. Use ConfigureInstrument to configure a pipette"
             )
-        pipette = self.configuration["left"]
+        # pipette = self.configuration["left"]
+        pipette = self.configuration[mount] # mount defined in line 362
 
         comment = record.node.lookup().name
         comment = (
@@ -465,6 +472,9 @@ class OT2Specialization(BehaviorSpecialization):
                     f"{pipette.display_id}.transfer({value}, {source_name}['{c_source}'], {destination_name}['{c_destination}'])  {comment}"
                 ]
 
+        text = f"Transfer {value} {units} of resouce from {source_name} into {destination_name}"
+        self.markdown_steps += [text]
+
     def transfer_by_map(
         self, record: labop.ActivityNodeExecution, ex: labop.ProtocolExecution
     ):
@@ -479,7 +489,8 @@ class OT2Specialization(BehaviorSpecialization):
         value = parameter_value_map["amount"]["value"].value
         units = parameter_value_map["amount"]["value"].unit
         units = tyto.OM.get_term_by_uri(units)
-        OT2Pipette = "left"
+        mount = parameter_value_map["coordinates"]["value"] # using an arbitrary unused parameter defined in liquid_handling library
+        # OT2Pipette = "left"
 
         # Trace the "source" pin back to the EmptyContainer to retrieve the
         # ContainerSpec for the destination container
@@ -528,7 +539,8 @@ class OT2Specialization(BehaviorSpecialization):
             raise Exception(
                 "Transfer call failed. Use ConfigureInstrument to configure a pipette"
             )
-        pipette = self.configuration["left"]
+        # pipette = self.configuration["left"]
+        pipette = self.configuration[mount] # mount defined in line 484
 
         source_str = source.mask
         destination_str = destination.mask
@@ -822,7 +834,113 @@ class OT2Specialization(BehaviorSpecialization):
         raise Exception(
             f"{instrument.display_id} is not currently configured for this robot"
         )
+    
+    def pipette_mix(
+        self, record: labop.ActivityNodeExecution, ex: labop.ProtocolExecution
+    ):
+        call = record.call.lookup()
+        parameter_value_map = call.parameter_value_map()
+        samples = parameter_value_map["samples"]["value"]
+        value = parameter_value_map["amount"]["value"].value
+        units = parameter_value_map["amount"]["value"].unit
+        units = tyto.OM.get_term_by_uri(units)
+        cycleCount = parameter_value_map["cycleCount"]["value"]
+        mount = parameter_value_map["pipette"]["value"]
 
+        # # Trace the "samples" pin back to the EmptyContainer to retrieve the
+        # # ContainerSpec for the destination container
+        # upstream_execution = record.get_token_source(
+        #     parameter_value_map["samples"]["parameter"].property_value
+        # )
+        # behavior_type = get_behavior_type(upstream_execution)
+        # if behavior_type == "PlateCoordinates":
+        #     upstream_map = upstream_execution.call.lookup().parameter_value_map()
+        #     coordinates = upstream_map["coordinates"]["value"]
+        #     upstream_execution = upstream_execution.get_token_source(
+        #         upstream_map["source"]["parameter"].property_value
+        #     ) # EmptyContainer
+        #     parameter_value_map = upstream_execution.call.lookup().parameter_value_map()
+        #     source_container = parameter_value_map["specification"]["value"]
+        # elif behavior_type == "LoadContainerInRack":
+        #     upstream_execution = upstream_execution.get_token_source(
+        #         upstream_map["slots"]["parameter"].property_value
+        #     ) # EmptyRack
+        # elif behavior_type == "LoadContainerOnInstrument":
+        #     upstream_map = upstream_execution.call.lookup().parameter_value_map()
+        #     coordinates = upstream_map["slots"]["value"]
+        #     upstream_execution = upstream_execution.get_token_source(
+        #         upstream_map["container"]["parameter"].property_value
+        #     ) # EmptyContainer
+        #     parameter_value_map = upstream_execution.call.lookup().parameter_value_map()
+        #     source_container = parameter_value_map["specification"]["value"]
+        
+        # else:
+        #     raise Exception(f'Invalid input pin "samples" for Mix.')
+        
+        # # Map the samples container to a variable name in the OT2 api script
+        # source_name = None
+        # for deck, labware in self.configuration.items():
+        #     if labware == source_container:
+        #         source_name = f"labware{deck}"
+        #         break
+        #     if not source_name:
+        #         raise Exception(f"{source_container} is not loaded.")
+
+        if not self.configuration:
+            raise Exception(
+                "Mix call failed. Use ConfigureRobot to configure a pipette"
+            )
+        # pipette = self.configuration["right"] # temporarily hard coded
+        pipette = self.configuration[mount]
+
+        comment = record.node.lookup().name
+        comment = (
+            "# " + comment
+            if comment
+            else "# Mix ActivityNode name is not defined."
+        )
+        # labware 7 temporarily hard coded
+        self.script_steps += [f"{pipette.display_id}.mix({cycleCount}, {value}, labware7['{samples.mask}'])    {comment}"]
+
+    def hold(
+        self, record: labop.ActivityNodeExecution, ex: labop.ProtocolExecution
+    ):
+        call = record.call.lookup()
+        parameter_value_map = call.parameter_value_map()
+        temperature = parameter_value_map["temperature"]["value"].value
+
+        comment = record.node.lookup().name
+        comment = (
+            "# " + comment
+            if comment
+            else "# Mix ActivityNode name is not defined."
+        )
+
+        # self.script_steps += ["thermocycler_module.open_lid()"]
+        self.script_steps += [f"thermocycler_module.set_block_temperature({temperature})    {comment}"]
+
+    def incubate(
+            self, record: labop.ActivityNodeExecution, ex: labop.ProtocolExecution
+    ):
+        call = record.call.lookup()
+        parameter_value_map = call.parameter_value_map()
+        duration = parameter_value_map["duration"]["value"].value
+        duration_unit = parameter_value_map["duration"]["value"].unit
+        duration_unit = tyto.OM.get_term_by_uri(duration_unit)
+        temperature = parameter_value_map["temperature"]["value"].value
+
+        comment = record.node.lookup().name
+        comment = (
+            "# " + comment
+            if comment
+            else "# Mix ActivityNode name is not defined."
+        )
+
+        # self.script_steps += [f"thermocycler_module.set_block_temperature(temperature={temperature}, hold_time_minutes{duration})"]
+        self.script_steps += [f"{comment}"]
+        self.script_steps += ["thermocycler_module.close_lid()"]
+        self.script_steps += [f"thermocycler_module.set_lid_temperature(temperature={temperature+10})"] # arbitrary 10C higher than block temp
+        self.script_steps += [f"thermocycler_module.set_block_temperature(temperature={temperature}, hold_time_{duration_unit}s={duration})"]
 
 def get_container_name(container: labop.ContainerSpec):
     if container.name:

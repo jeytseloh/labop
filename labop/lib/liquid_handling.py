@@ -43,6 +43,7 @@ p.add_input(
 p.add_input("temperature", sbol3.OM_MEASURE, optional=True)
 p.add_input("amount", sbol3.OM_MEASURE)  # Must be volume
 p.add_input("dispenseVelocity", sbol3.OM_MEASURE, True)
+p.add_input("pipette", sbol3.PROV_AGENT, True) # to specify which pipette to use
 doc.add(p)
 
 p = labop.Primitive("TransferInto")
@@ -103,6 +104,7 @@ doc.add(p)
 p = labop.Primitive("PipetteMix")
 p.description = "Mix by cycling a measured volume of liquid in and out at an array of samples a fixed number of times"
 p.add_input("samples", "http://bioprotocols.org/labop#SampleCollection")
+p.add_input("pipette", sbol3.PROV_AGENT, True) # to specify which pipette to use
 p.add_input("amount", sbol3.OM_MEASURE)  # Must be volume
 p.add_input("dispenseVelocity", sbol3.OM_MEASURE, True)
 p.add_input("cycleCount", sbol3.OM_MEASURE, True)
